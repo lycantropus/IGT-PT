@@ -4,30 +4,28 @@ var totalcash = 2000, //cash in the cash pile
         deckBclicks = 0, //clicks for deck B
         deckCclicks = 0, //clicks for deck C
         deckDclicks = 0, //clicks for deck D
-        totalclicks = 0, //total clicks. if == to MAXGAMES stop playing.  
-        penalty = 0,   //penalty store for display
-        netgain = 0,   //netgain store fpr display
-        email_address = '', //where to email the data to?
-        mail_attachment = '', //the results of the test that gets emailed.
+        totalclicks = 0,  
+        penalty = 0,   
+        netgain = 0,   
+        email_address = '',
+        mail_attachment = '', 
         mail_subject = 'IGT data',
-		mailsvc_url = 'TODO' //Email Service. CORS is disabled so I hope this isn't exploitable.
+		mailsvc_url = 'TODO' 
         //GAME_VERSION = "0.16",
         //GAME_VERSION_DATE = new Date("October 22, 2018 10:44:00"),    
-        DECKA_WIN = 100, //how much did we win on Deck A click
-        DECKB_WIN = 100, //how much did we win on Deck B click
-        DECKC_WIN = 50, //how much did we win on Deck C click
-        DECKD_WIN = 50, //how much did we win on Deck D click
-	    CASHMAX = 6000, //Maximum amount of cash that can be won.	
-	    MAXGAMES = 100; //maxium amount of plays 100
+        DECKA_WIN = 100,
+        DECKB_WIN = 100,
+        DECKC_WIN = 50,
+        DECKD_WIN = 50,
+	    CASHMAX = 6000, 	
+	    MAXGAMES = 100; 
 
-//Penaly schedules. If lookup DECKN_PENALTY[deckNclicks] to get the preset penalty amount. 
 var DECKA_PENALTY = [0, 0, -150, 0, -300, 0, -200, 0, -250, -350, 0, -350, 0, -250, -200, 0, -300, -150, 0, 0, 0, -300, 0, -350, 0, -200, -250, -150, 0, 0, -350, -200, -250, 0, 0, 0, -150, -300, 0, 0];
 var DECKB_PENALTY = [0, 0, 0, 0, 0, 0, 0, 0, -1250, 0, 0, 0, 0, -1250, 0, 0, 0, 0, 0, 0, -1250, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1250, 0, 0, 0, 0, 0, 0, 0, 0];
 var DECKC_PENALTY = [0, 0, -50, 0, -50, 0, -50, 0, -50, -50, 0, -25, -75, 0, 0, 0, -25, -75, 0, -50, 0, 0, 0, -50, -25, -50, 0, 0, -75, -50, 0, 0, 0, -25, -25, 0, -75, 0, -50, -75];
 var DECKD_PENALTY = [0, 0, 0, 0, 0, 0, 0, 0, 0, -250, 0, 0, 0, 0, 0, 0, 0, 0, 0, -250, 0, 0, 0, 0, 0, 0, 0, 0, -250, 0, 0, 0, 0, 0, -250, 0, 0, 0, 0, 0];
 var selectedCards = []; //stores the selections for output when the game is over.
 
-//http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
 function getParameterByName(name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
@@ -40,16 +38,16 @@ $(function () {
     //$("#game_version").html(GAME_VERSION);
     $("#testresults").hide();
     $(".spinner").hide();    
-    $("#emailResultsTo").val(getParameterByName('email_results_to')); //get the query string value for auto address filling :)
-	$("#subjectID").val(getParameterByName('mail_subject')); //get the query strung for the subject for the email. 
+    $("#emailResultsTo").val(getParameterByName('email_results_to')); 
+	$("#subjectID").val(getParameterByName('mail_subject')); 
 	
-    $('#modal-splash').modal('show'); //show the instructions modal on first load
+    $('#modal-splash').modal('show');
 
     $("#emailBtn").click(function () {
         email_address = $("#emailResultsTo").val();			
 		if($("#subjectID").val() !== "") mail_subject = $("#subjectID").val();
 		
-        if (email_address.length && mail_attachment.length) { //if there is no email address or data to post then don't do it.
+        if (email_address.length && mail_attachment.length) {
             $.ajax({
                 type: 'POST',
                 contentType: "application/json; charset=utf-8",
@@ -88,7 +86,6 @@ $(function () {
         }
     });
 
-    //Allows the person to hide and see the results of the test in the output modal. This is useful if email errors out.
     $("#viewresultsbtn").click(function () {
         if ($("#testresults").is(":hidden")) {
             $("#testresults").fadeIn(function () { $("#viewresultsbtn").html("Esconder resultado"); });
@@ -99,70 +96,61 @@ $(function () {
     });
 
     $(".card").click(function () {
-        totalclicks++; //increment our click counter.
-        //Note in order to end the game the person has to click MAXGAMES + 1 times. This is ok becuase the person is just clicking away.
+        totalclicks++;
         if (totalclicks <= MAXGAMES) {
 
-            var clicked = $(this).attr("id"); //Get the id of the clicked deck
-            switch (clicked) {                //Do something with that clicked deck id.
+            var clicked = $(this).attr("id"); 
+            switch (clicked) {                
                 case "card-one":
                     if (deckAclicks === DECKA_PENALTY.length)
                     {
-                        //if we are at the end of the array reset our position back to the beginning. this is described in variants of this test.
                         deckAclicks = 0;
                     }   
-                    penalty = DECKA_PENALTY[deckAclicks]; //get the penalty value
-                    netgain = DECKA_WIN + penalty;          //get the net gain                    
-                    $("#winamt").html(DECKA_WIN);           //output our win amount                   
-                    deckAclicks++;                        //increment our position for penalty lookup
-                    selectedCards.push("A");                //Add to our output of selected cards.
-                    //$("#deck-one-clicks").html(deckoneclicks); debugging                    
+                    penalty = DECKA_PENALTY[deckAclicks];
+                    netgain = DECKA_WIN + penalty;                            
+                    $("#winamt").html(DECKA_WIN);           
+                    deckAclicks++;                       
+                    selectedCards.push("A");                     
                     break;
 
                 case "card-two":
                     if (deckBclicks === DECKB_PENALTY.length) {
-                        //if we are at the end of the array reset our position back to the beginning. this is described in variants of this test.
                         deckBclicks = 0;
                     }
-                    penalty = DECKB_PENALTY[deckBclicks]; //get the penalty value
-                    netgain = DECKB_WIN + penalty;          //get the net gain                    
-                    $("#winamt").html(DECKB_WIN);           //output our win amount                   
-                    deckBclicks++;                        //increment our position for penalty lookup
-                    selectedCards.push("B");                //Add to our output of selected cards.
-                    //$("#deck-one-clicks").html(deckoneclicks); debugging          
+                    penalty = DECKB_PENALTY[deckBclicks]; 
+                    netgain = DECKB_WIN + penalty;                      
+                    $("#winamt").html(DECKB_WIN);                        
+                    deckBclicks++;                        
+                    selectedCards.push("B");                    
                     break;
 
                 case "card-three":
                     if (deckCclicks === DECKC_PENALTY.length) {
-                        //if we are at the end of the array reset our position back to the beginning. this is described in variants of this test.
                         deckCclicks = 0;
                     }
-                    penalty = DECKC_PENALTY[deckCclicks]; //get the penalty value
-                    netgain = DECKC_WIN + penalty;          //get the net gain                    
-                    $("#winamt").html(DECKC_WIN);           //output our win amount                   
-                    deckCclicks++;                        //increment our position for penalty lookup
-                    selectedCards.push("C");                //Add to our output of selected cards.
-                    //$("#deck-one-clicks").html(deckoneclicks); debugging                    
+                    penalty = DECKC_PENALTY[deckCclicks]; 
+                    netgain = DECKC_WIN + penalty;              
+                    $("#winamt").html(DECKC_WIN);              
+                    deckCclicks++;                        
+                    selectedCards.push("C");                   
                     break;
 
                 case "card-four":
                     if (deckDclicks === DECKD_PENALTY.length) {
-                        //if we are at the end of the array reset our position back to the beginning. this is described in variants of this test.
                         deckDclicks = 0;
                     }
-                    penalty = DECKD_PENALTY[deckDclicks]; //get the penalty value
-                    netgain = DECKD_WIN + penalty;          //get the net gain                    
-                    $("#winamt").html(DECKD_WIN);           //output our win amount                   
-                    deckDclicks++;                        //increment our position for penalty lookup
-                    selectedCards.push("D");                //Add to our output of selected cards.
-                    //$("#deck-one-clicks").html(deckoneclicks); debugging                    
+                    penalty = DECKD_PENALTY[deckDclicks]; 
+                    netgain = DECKD_WIN + penalty;                          
+                    $("#winamt").html(DECKD_WIN);                          
+                    deckDclicks++;                        
+                    selectedCards.push("D");                          
                     break;
             }
 
-            $("#penaltyamt").html(penalty.toString());  //output the penalty
-            $("#netgains").html(netgain.toString());    //output the net gain or loss
-            totalcash += netgain;                       //increment our totals
-            //change the color of the font if we win or lose
+            $("#penaltyamt").html(penalty.toString());  
+            $("#netgains").html(netgain.toString());   
+            totalcash += netgain;                     
+           
             if (netgain <= 0)
                 $(".outputtext").css("color", "red");
             else
@@ -172,15 +160,15 @@ $(function () {
             $("#totalmoney").html("$" + totalcash.toString());
             //calculate our cash bar and display
             var cashpilebarvalue = 100 * totalcash / CASHMAX;
-            $("#cashpilebar").css("width", cashpilebarvalue.toString() + "%"); //grow or shrink the progress bar
-            $("#cashpileamt").html("$" + totalcash);                            //change the label in the progress bar
+            $("#cashpilebar").css("width", cashpilebarvalue.toString() + "%"); 
+            $("#cashpileamt").html("$" + totalcash);
         }
         else //game over 
         {
-            $("#modal-gameend").modal('show');              //show the game end modal  
-            var prettyprnt = selectedCards.join(", ");      //setup pretty printing
-            $("#testresults").html(prettyprnt);             //output the pretty print            
-            mail_attachment = prettyprnt.replace(/\s+/g, ""); //remove all white space
+            $("#modal-gameend").modal('show');              
+            var prettyprnt = selectedCards.join(", ");    
+            $("#testresults").html(prettyprnt); 
+            mail_attachment = prettyprnt.replace(/\s+/g, ""); 
         }
     });
 });
