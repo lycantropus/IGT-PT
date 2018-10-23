@@ -91,10 +91,10 @@ $(function () {
     //Allows the person to hide and see the results of the test in the output modal. This is useful if email errors out.
     $("#viewresultsbtn").click(function () {
         if ($("#testresults").is(":hidden")) {
-            $("#testresults").fadeIn(function () { $("#viewresultsbtn").html("Hide results."); });
+            $("#testresults").fadeIn(function () { $("#viewresultsbtn").html("Esconder resultado"); });
         }
         else {
-            $("#testresults").fadeOut(function () { $("#viewresultsbtn").html("View results?"); });
+            $("#testresults").fadeOut(function () { $("#viewresultsbtn").html("Ver resultado?"); });
         }
     });
 
